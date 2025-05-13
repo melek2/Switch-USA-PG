@@ -126,16 +126,26 @@ def fuel_files(
         load_zones["zone_dbid"].max() + 1,
     ]
     load_zones.to_csv(out_folder / "load_zones.csv", index=False)
-
-    regional_fuel_markets = pd.DataFrame(
-        {"regional_fuel_market": "loadzone-Fuel", "fuel": "Fuel"}, index=[0]
-    )
+    ### edited by MBA.regional_fuel_markets must have columns 'market' and 'fuel'
+    # regional_fuel_markets = pd.DataFrame(
+    #     {"regional_fuel_market": "loadzone-Fuel", "fuel": "Fuel"}, index=[0]
+    # )
+    regional_fuel_markets = pd.DataFrame({
+    "market": ["loadzone-Fuel"],
+    "fuel":   ["Fuel"],
+    })
     regional_fuel_markets
 
     ### edited by RR. CHANGE COLUMN NAME from fuel to rfm.
-    zone_regional_fm = pd.DataFrame(
-        {"load_zone": "loadzone", "rfm": "loadzone-Fuel"}, index=[0]
-    )
+    ### edited by MBA: zone_to_regional_fuel_market needs load_zone, fuel, market
+    # zone_regional_fm = pd.DataFrame(
+    #     {"load_zone": "loadzone", "rfm": "loadzone-Fuel"}, index=[0]
+    # )
+    zone_regional_fm = pd.DataFrame({
+    "load_zone": ["loadzone"],
+    "fuel":      ["Fuel"],
+    "market":    ["loadzone-Fuel"],
+    })
     zone_regional_fm
     # creating dummy values based on one load zone in REAM's input file
     # note:regional_fuel_market should align with the regional_fuel_market table.
@@ -148,7 +158,10 @@ def fuel_files(
             "max_avail_at_cost": [651929, 3845638, 3871799, 3882177, 3889953, 3920836],
         }
     )
-    fuel_supply_curves20.insert(0, "regional_fuel_market", "loadzone-Fuel")
+    ### edited by MBA: supply‐curve header must be 'market'
+    # fuel_supply_curves20.insert(0, "regional_fuel_market", "loadzone-Fuel")
+    fuel_supply_curves20.insert(0, "market", "loadzone-Fuel")
+
     fuel_supply_curves30 = fuel_supply_curves20.copy()
     fuel_supply_curves30["period"] = 2030
     fuel_supply_curves40 = fuel_supply_curves20.copy()
