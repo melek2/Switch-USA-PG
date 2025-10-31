@@ -239,6 +239,7 @@ def generator_and_load_files(
     # Editted by MBA: add plant_gen_id to gen_info.csv
     info = pd.read_csv(out_folder / "gen_info.csv")
     gen_candidate_file(gens_by_build_year, info, out_folder)
+    # built = gens_by_build_year
     # pick up Resource → plant_gen_id map (one per cluster)
     plant_map = (
         gens_by_build_year[["Resource","plant_gen_id"]]
@@ -589,6 +590,7 @@ def gen_candidate_file(gens_by_build_year, info, out_folder):
 
     candidates.to_csv(out_folder / "candidate_sites.csv", index=False, na_rep=".")
 
+
 def gen_build_predetermined_file(gens_by_build_year, out_folder):
     """
     Output columns
@@ -641,13 +643,15 @@ def gen_info_file(
             "Geothermal",
             "Hydro",
             "Nuclear",
-            "Oil",
+            "Oil", #same as petroleum
             "Solar",
             "Storage",
             "Waste",
             "Wave",
             "Wind",
             "Other",
+            "Petroleum",
+            "Hydrogen"
         ],
         "color": [
             "green",
@@ -663,6 +667,8 @@ def gen_info_file(
             "blue",
             "deepskyblue",
             "white",
+            "orange",
+            "lightcoral"
         ],
     }
     graph_tech_colors_table = pd.DataFrame(graph_tech_colors_data)
