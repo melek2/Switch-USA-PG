@@ -1,8 +1,10 @@
 [submodule "MIP_results_comparison"]
 	path = MIP_results_comparison
-	url = https://github.com/gschivley/MIP_results_comparison.git
+	url = https://github.com/melek2/MIP_results_comparison.git
 	shallow = true
+	branch = melek/updates
 [submodule "PowerGenome"]
 	path = PowerGenome
-	url = https://github.com/switch-model/PowerGenome.git
+	url = https://github.com/melek2/PowerGenome.git
 	shallow = true
+	branch = melek/updates
