@@ -575,6 +575,8 @@ def gen_info_file(
     # for all rows)
     gens = gens_by_model_year.drop_duplicates(subset="Resource")
 
+    print(gens.head())
+
     set_retirement_age(gens, settings)
 
     gen_info = gen_info_table(
@@ -582,6 +584,8 @@ def gen_info_file(
         settings.get("transmission_investment_cost")["spur"]["capex_mw_mile"],
     )
 
+    print(gen_info.head())
+    
     graph_tech_colors_data = {
         "gen_type": [
             "Biomass",
@@ -938,6 +942,15 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
 
     gens_by_build_year = pd.concat(
         [existing_gens_by_build_year, new_gens_by_build_year], ignore_index=True
+    )
+    plant_map = (
+    units_by_model_year[["Resource", "build_year", "plant_gen_id"]]
+    .drop_duplicates()
+    )
+    gens_by_build_year = gens_by_build_year.merge(
+        plant_map,
+        on=["Resource", "build_year"],
+        how="left"
     )
     # Remove storage-related params (always 0?) for non-storage gens
     # (could be done in the loop above, and in theory the sums would come out

@@ -250,6 +250,7 @@ def gen_info_table(
 
     cols = [
         "GENERATION_PROJECT",
+        # "plant_gen_id"
         "gen_tech",
         "gen_energy_source",
         "gen_load_zone",
