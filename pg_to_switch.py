@@ -641,13 +641,15 @@ def gen_info_file(
             "Geothermal",
             "Hydro",
             "Nuclear",
-            "Oil",
+            "Oil", #same as petroleum
             "Solar",
             "Storage",
             "Waste",
             "Wave",
             "Wind",
             "Other",
+            "Petroleum",
+            "Hydrogen"
         ],
         "color": [
             "green",
@@ -663,6 +665,8 @@ def gen_info_file(
             "blue",
             "deepskyblue",
             "white",
+            "orange",
+            "lightcoral"
         ],
     }
     graph_tech_colors_table = pd.DataFrame(graph_tech_colors_data)
