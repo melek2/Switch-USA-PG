@@ -176,7 +176,7 @@ def load_MVs_as_df(csv_path):
     
     return df
 
-# from /Users/melek/Switch-USA-PG/ConnectingMVsandGens.py
+# from /Users/melek/Documents/GitHub/Switch-USA-PG/ConnectingMVsandGens.py
 
 def find_cell_ids_for_row(row, cells):
     # 1) Grab lon/lat; if they’re strings, parse into actual Python lists
@@ -257,57 +257,83 @@ def impute_mv_by_zone_tech(gen_info: pd.DataFrame, column: str) -> pd.DataFrame:
     """
     For any NaN in gen_info[column], replace it with the average value from the “closest” rows:
       1. same zone & same tech
-      2. same zone (any tech)
-      3. same tech (any zone)
-      4. global mean fallback
+      2. same zone & same gen_energy_source
+      3. same zone (any tech)
+      4. same tech (any zone)
+      5. global mean fallback
 
     Prints each imputation and, at the end, how many times each rule fired.
     """
-    # 1) Mask of rows where column is not NaN
+    
     valid = gen_info.loc[gen_info[column].notna(), :]
     if valid.empty:
         return gen_info
 
+    # Precompute means for fast lookups
     global_mean = valid[column].mean()
+    mean_zone_tech = valid.groupby(["gen_load_zone", "gen_tech"], dropna=False)[column].mean()
+    # Only build the zone+energy_source map if the column exists
+    has_energy_source = "gen_energy_source" in gen_info.columns
+    if has_energy_source:
+        mean_zone_fuel = valid.groupby(["gen_load_zone", "gen_energy_source"], dropna=False)[column].mean()
+    mean_zone = valid.groupby(["gen_load_zone"], dropna=False)[column].mean()
+    mean_tech = valid.groupby(["gen_tech"], dropna=False)[column].mean()
+
     na_idx = gen_info.index[gen_info[column].isna()]
 
-    # set up counters
     rule_counts = {
-        "same zone & same tech": 0,
-        "same zone (any tech)":     0,
-        "same tech (any zone)":     0,
-        "global mean fallback":     0,
+        "same zone & same tech":            0,
+        "same zone & same energy source":   0,
+        "same zone (any tech)":             0,
+        "same tech (any zone)":             0,
+        "global mean fallback":             0,
     }
 
     for i in na_idx:
         zone = gen_info.at[i, "gen_load_zone"]
         tech = gen_info.at[i, "gen_tech"]
+        fuel = gen_info.at[i, "gen_energy_source"] if has_energy_source else None
 
-        # try each rule in turn
-        subset = valid.loc[
-            (valid["gen_load_zone"] == zone) & (valid["gen_tech"] == tech),
-            column
-        ]
-        if not subset.empty:
-            fill_val, rule = subset.mean(), "same zone & same tech"
-        else:
-            subset = valid.loc[valid["gen_load_zone"] == zone, column]
-            if not subset.empty:
-                fill_val, rule = subset.mean(), "same zone (any tech)"
-            else:
-                subset = valid.loc[valid["gen_tech"] == tech, column]
-                if not subset.empty:
-                    fill_val, rule = subset.mean(), "same tech (any zone)"
-                else:
-                    fill_val, rule = global_mean, "global mean fallback"
+        # 1) same zone & same tech
+        fill_val = mean_zone_tech.get((zone, tech), None)
+        rule = None
+
+        # 2) same zone & same gen_energy_source
+        if fill_val is None and has_energy_source and pd.notna(fuel):
+            fill_val = mean_zone_fuel.get((zone, fuel), None)
+            if fill_val is not None:
+                rule = "same zone & same energy source"
+
+        # 3) same zone (any tech)
+        if fill_val is None:
+            fill_val = mean_zone.get(zone, None)
+            if fill_val is not None:
+                rule = "same zone (any tech)"
+
+        # 4) same tech (any zone)
+        if fill_val is None:
+            fill_val = mean_tech.get(tech, None)
+            if fill_val is not None:
+                rule = "same tech (any zone)"
+
+        # 5) global mean fallback
+        if fill_val is None or pd.isna(fill_val):
+            fill_val = global_mean
+            rule = "global mean fallback"
+
+        # If rule still None, it means the first rule hit (zone+tech)
+        if rule is None:
+            rule = "same zone & same tech"
 
         gen_info.at[i, column] = fill_val
         rule_counts[rule] += 1
-        print(f"Plant {i} (zone={zone}, tech={tech}) imputed via {rule}")
+        print(f"Plant {i} (zone={zone}, tech={tech}"
+              + (f", fuel={fuel}" if has_energy_source else "")
+              + f") imputed via {rule}")
 
     # summary
     print("\nImputation summary:")
     for rule, cnt in rule_counts.items():
-        print(f"  {rule:24s}: {cnt}")
+        print(f"  {rule:30s}: {cnt}")
 
     return gen_info
