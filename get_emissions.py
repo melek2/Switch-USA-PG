@@ -1,3 +1,39 @@
+"""
+get_emissions.py
+----------------
+This script builds generator-level emission intensities and marginal damage costs 
+for Switch model input folders. It automates the workflow that was previously 
+handled by AddEmissionInputs3.py, now refactored for clarity and CLI execution.
+
+Main tasks:
+1. **CLI Input** – Takes a single argument: the path to a Switch input folder 
+   (e.g., `/Users/.../base_20_week_2045/2045/base_20_week_test`).
+2. **Data Loading** – Reads Switch input files (`fuels.csv`, `gen_info2.csv`, 
+   `financials.csv`) and supporting emission datasets (ANL Tables 2–5, InMAP 
+   marginal values, EIA plant data, CERF candidate sites, and IPM→NERC mappings).
+3. **Emission Factor Computation** – Calculates fuel-level emission intensities 
+   (NOx, SOx, PM2.5, PM10, VOC, CO, CH4, N2O) using ANL-20/41 Tables 2 and 4.
+4. **NERC-Region Weighting** – Derives generator-specific emission factors by 
+   combining ANL Table 5 with NERC region assignments and inferred technologies.
+5. **Marginal Damage Costs (MVs)** – Maps each generator (and CERF site, if present) 
+   to InMAP grid cells, retrieves marginal values (PM2.5, NOx, VOC), and imputes 
+   missing data by zone and technology using the updated `impute_mv_by_zone_tech`.
+6. **Non-Emitter Handling** – Automatically assigns zero cost and intensity for 
+   non-emitting sources (e.g., wind, solar, hydro, nuclear, hydrogen).
+7. **Cost Conversion** – Adjusts marginal damage costs from 2011 to the financial 
+   base year using a fixed cumulative inflation rate.
+8. **Outputs** – Produces:
+   - `gen_pm25_costs.csv` – PM2.5 marginal cost and intensity by generator.
+   - `gen_emission_costs.csv` – Combined PM2.5, NOx, and VOC costs and intensities.
+   - Archived `fuels_archive.csv` with computed fuel-level emission intensities.
+
+Usage example:
+    $ python get_emissions.py /path/to/switch_inputs_folder
+
+This version improves readability, prints progress updates for long-running steps, 
+and ensures compatibility with the latest imputation logic in 
+`EmissionConversionFunctions.py`.
+"""
 ####### 
 # 0) Imports (deduped) + small helpers
 import os
