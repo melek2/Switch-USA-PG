@@ -1,4 +1,4 @@
-# %% 
+####### 
 # 0) Imports (deduped) + small helpers
 import os
 from pathlib import Path
@@ -20,23 +20,41 @@ def to_fraction_from_percent(s: pd.Series) -> pd.Series:
         s.astype(str).str.strip().str.rstrip('%').replace({'': np.nan})
         .astype(float) / 100.0
     )
-# %% 
+####### 
+#######
+# 1) Paths (CLI)
+import argparse
+import sys
+
+parser = argparse.ArgumentParser(
+    description="Build per-generator emission intensities and costs for a Switch input folder."
+)
+parser.add_argument(
+    "input_path",
+    help="Path to the Switch input folder (e.g., /Users/.../base_20_week_2045/2045/base_20_week_test)"
+)
+args = parser.parse_args()
+
+input_path = Path(args.input_path).expanduser().resolve()
+print(f"[INFO] Using input folder: {input_path}")
+
 # 1) Paths (alternatives are commented out to flip quickly)
 # input_path = Path('/Users/melek/Desktop/Research/Capacity Expansion/Air quality/Inputs/switch_inputs_foresight/base_20_week_2050/2050/base_20_week')
-input_path = Path('/Users/melek/Desktop/Research/Air quality/Inputs/switch_inputs_foresight/base_20_week_2045/2045/base_20_week_test')
+# input_path = Path('/Users/melek/Desktop/Research/Air quality/Inputs/switch_inputs_foresight/base_20_week_2045/2045/base_20_week_test')
 
 fuels_file       = input_path / 'fuels.csv'
 gen_info_file    = input_path / 'gen_info2.csv'
 financials_file  = input_path / 'financials.csv'
+cerf_siting_file = input_path / 'cerf_candidate_sites.csv' # From [run_cerf_conus26.py.ipnyb](/Users/melek/Desktop/Research/Siting/run_cerf_conus26.py)
 
-cerf_siting_file = Path('/Users/melek/Desktop/Research/Capacity Expansion/Siting/conus26/cerf_inputs/outputs/cerf_candidate_sites.csv') # From [cerf26.ipnyb](/Users/melek/Desktop/Research/Capacity Expansion/Siting/conus26/cerf26.ipynb)
-table2_file      = Path('/Users/melek/Documents/Data/Emissions/Energy_Conversion_Efficiecies_ANL_2020_Table2.csv')                      # From ANL-20/41 "TABLE 2 National and regional energy conversion efficiencies by fuel subtype and combustion technology."
-table4_file      = Path('/Users/melek/Documents/Data/Emissions/Emission_Factors_ANL_2020_Table_4.csv')                                  # From ANL-20/41 "TABLE 4 National generation-weighted average emission factors in g/kWh by fuel subtype and combustion technology"
-table5_file      = Path('/Users/melek/Documents/Data/Emissions/NERC_Regions_Emission_Factors_ANL_2020_Table_5_clean.csv')               # From ANL-20/41 "TABLE 5 NERC regional generation-weighted average emission factors in g/kWh by fuel subtype and combustion technology"
-mv_file          = Path('/Users/melek/Documents/Data/inmap/SRs/marginal_values_updated_110819/marginal_values_updated_110819.csv')
-powerplant0_file = Path('/Users/melek/Documents/Data/DOE-OpenEnergy/power-plants0.csv')                                                 # From openenergyhub.ornl.gov "Power Plants - EIA"
-IPM2NERC_file         = Path('/Users/melek/Documents/Data/ShapeFiles/IPM_to_NERC_mapping.csv')                                               # a csv file that maps each load zone to a NERC region. information from '/Users/melek/Desktop/Research/Capacity Expansion/Switch/Switch-USA-PG/MIP_results_comparison/case_settings/26-zone/settings-atb2023/model_definition.yml' line 82-119
-# %% 
+input_data       = Path('emission_inputs')
+table2_file      = input_data / 'ANL_tables/Energy_Conversion_Efficiecies_ANL_2020_Table2.csv'                     # From ANL-20/41 "TABLE 2 National and regional energy conversion efficiencies by fuel subtype and combustion technology."
+table4_file      = input_data / 'ANL_tables/Emission_Factors_ANL_2020_Table_4.csv'                                  # From ANL-20/41 "TABLE 4 National generation-weighted average emission factors in g/kWh by fuel subtype and combustion technology"
+table5_file      = input_data / 'ANL_tables/NERC_Regions_Emission_Factors_ANL_2020_Table_5_clean.csv'               # From ANL-20/41 "TABLE 5 NERC regional generation-weighted average emission factors in g/kWh by fuel subtype and combustion technology"
+mv_file          = input_data / 'InMAP/marginal_values_updated_110819.csv'
+powerplant0_file = input_data / 'DoE/power-plants.csv'                           # From openenergyhub.ornl.gov "Power Plants - EIA"
+IPM2NERC_file    = input_data / 'IPM_to_NERC_mapping.csv'                                               # a csv file that maps each load zone to a NERC region. information from '/Users/melek/Desktop/Research/Capacity Expansion/Switch/Switch-USA-PG/MIP_results_comparison/case_settings/26-zone/settings-atb2023/model_definition.yml' line 82-119
+####### 
 # 2) Load core inputs
 # switch files
 fuels       = pd.read_csv(fuels_file)
@@ -54,7 +72,16 @@ IPM_to_NERC_mapping  = pd.read_csv(IPM2NERC_file)
 # scalar base year
 base_financial_year = int(pd.Series(financials['base_financial_year']).iloc[0])
 print(f"Loaded. base_financial_year={base_financial_year}, gen_info={len(gen_info):,} rows, fuels={len(fuels):,} rows.")
-# %% 
+fuel_map = {
+    "naturalgas":"NG", "ng":"NG",
+    "distillate":"OIL", "oil":"OIL",
+    "coal":"COAL",
+    "biomass":"BIOMASS", "waste_biomass":"BIOMASS",
+    # non-emitters
+    "electricity":None, "water":None, "wind":None, "solar":None,
+    "uranium":None, "nuclear":None, "hydrogen":None, "heat":None
+}
+####### 
 # 3) Tidy ANL Table 4 shares to fractions
 for col in ['Fuel_type_share', 'Fuel_subtype_share', 'Combustion_technology_share']:
     if col in EmissionFactors.columns:
@@ -75,7 +102,7 @@ ef_per_fuel = (
     .reset_index(drop=True)
 )
 ef_per_fuel.head()
-# %% 
+####### 
 # 4) Tidy ANL Table 2 efficiencies
 # Expect columns: 'Fuel type', 'Fuel subtype share (%)', 'Combustion tech share (%)', 'National'
 if {'Fuel subtype share (%)','Combustion tech share (%)'}.issubset(HeatRates.columns):
@@ -96,7 +123,7 @@ efficiency_by_fuel = (
 # Efficiency given in percent; convert to fraction
 efficiency_by_fuel['Efficiency'] = efficiency_by_fuel['Efficiency'] / 100.0
 efficiency_by_fuel.head()
-# %% 
+####### 
 # 5) Join EF + Efficiency and compute intensities (t/MMBTU)
 BTU_PER_KWH = 3412.0
 
@@ -113,7 +140,7 @@ for p in pollutants:
 intensity_cols = [c for c in ef_hr.columns if c.endswith('_intensity')]
 lookup = ef_hr.set_index('Fuel_type')[intensity_cols]
 lookup.head()
-# %% 
+####### 
 # 5a) Map intensities to fuels.csv, archive, save
 fuel_to_ef = {
     'Coal':          'Coal',
@@ -138,7 +165,7 @@ fuels_archive = input_path / 'fuels_archive.csv'
 # fuels.to_csv(fuels_archive, index=False)
 # fuels_out.to_csv(fuels_file, index=False)
 print(f"fuels.csv updated with {len(intensity_cols)} intensity columns. Archive -> {fuels_archive}")
-# %% 
+####### 
 # 6) Emission Factors by generator
 def build_EF_with_emissions(gen_info, IPM_to_NERC_mapping, table5):
     """
@@ -274,7 +301,7 @@ def build_EF_with_emissions(gen_info, IPM_to_NERC_mapping, table5):
 
     return EF
 EF = build_EF_with_emissions(gen_info, IPM_to_NERC_mapping, EmissionFactorsNERC)
-# %%
+#######
 # 7) Exclude CERF candidate projects from gen_info (if present)
 if cerf_candidate_sites is not None:
     before = len(gen_info)
@@ -282,29 +309,51 @@ if cerf_candidate_sites is not None:
     print(f"Filtered gen_info: {before} -> {len(gen_info)} (removed CERF candidates)")
 else:
     print("No CERF candidate sites file found; keeping gen_info as-is.")
-# %% 
+####### 
 # 8) Attach coordinates and MV grid
 # Note: get_plants_coordinates reads from file path, not df
+print(f"\n[INFO] Step 8: Attaching coordinates and assigning marginal value (MV) cells...")
+print(f"       → Starting coordinate lookup for {len(gen_info):,} generator records. This step may take several minutes depending on dataset size.")
+print("[INFO] Reading plant coordinates from input files...")
 gen_info = get_plants_coordinates(str(gen_info_file), str(powerplant0_file))
+print(f"[INFO] Coordinates attached successfully — sample size: {len(gen_info):,} rows.")
 
+
+print("[INFO] Loading InMAP marginal values (as GeoDataFrame and DataFrame)...")
 MVgdf = load_MVs_as_gdf(str(mv_file))
+MVdf  = load_MVs_as_df(str(mv_file))
+print(f"[INFO] Loaded MV grid with {len(MVgdf):,} spatial cells.")
 MVdf  = load_MVs_as_df(str(mv_file))
 
 # cell IDs for each set
+print(f"[INFO] Assigning MV cell IDs for {len(gen_info):,} generator rows. This may take time due to spatial lookups...")
 gen_info['cell_IDs'] = gen_info.apply(lambda r: find_cell_ids_for_row(r, MVgdf), axis=1)
+print(f"[INFO] Finished assigning cell IDs to all generators.")
 
 if cerf_candidate_sites is not None:
+    print(f"[INFO] Processing CERF candidate sites: {len(cerf_candidate_sites):,} rows to map to MV cells...")
     cerf_candidate_sites['cell_IDs'] = cerf_candidate_sites.apply(lambda r: find_cell_ids_for_row(r, MVgdf), axis=1)
     gen_all = pd.concat([gen_info, cerf_candidate_sites], ignore_index=True)
+    print(f"[INFO] Combined generator dataset includes both base and CERF sites ({len(gen_all):,} total rows).")
 else:
+    print(f"[INFO] No CERF candidate sites provided — continuing with {len(gen_info):,} base generators only.")
     gen_all = gen_info.copy()
-
-print(f"Combined generators count: {len(gen_all):,}")
-# %% 
+print(f"[INFO] Coordinate and MV-cell assignment complete. Final generator count: {len(gen_all):,}\n")
+####### 
 # 9a) Add MV average (PM2.5) and impute
 target_mv_col = "MD_PM2.5_ground"
 
 gen_all = add_mv_average_column(gen_all, MVdf, target_mv_col)
+# Assign 0 to non-emitting technologies before imputation
+print(f"[INFO] Setting {target_mv_col} = 0 for non-emitting technologies...")
+
+# Identify non-emitting sources from fuel_map
+non_emitters = [k for k, v in fuel_map.items() if v is None]
+
+# Assign 0 to non-emitting techs
+mask = gen_all["gen_energy_source"].str.lower().isin(non_emitters)
+gen_all.loc[mask, target_mv_col] = 0
+print(f"[INFO] Assigned 0 to {mask.sum()} non-emitting generators.")
 gen_all = impute_mv_by_zone_tech(gen_all, target_mv_col)
 
 missing = gen_all[target_mv_col].isna().sum()
@@ -326,26 +375,46 @@ out_pm25 = input_path / "gen_pm25_costs.csv"
 gen_pm25_costs.to_csv(out_pm25, index=False)
 print(f"Saved {out_pm25} with {len(gen_pm25_costs):,} rows.")
 
-# %% 
+####### 
 # 9b) Add MV average (NOx) and impute
 target_mv_col = "MD_NOx_ground"
 
 gen_all = add_mv_average_column(gen_all, MVdf, target_mv_col)
+# Assign 0 to non-emitting technologies before imputation
+print(f"[INFO] Setting {target_mv_col} = 0 for non-emitting technologies...")
+
+# Identify non-emitting sources from fuel_map
+non_emitters = [k for k, v in fuel_map.items() if v is None]
+
+# Assign 0 to non-emitting techs
+mask = gen_all["gen_energy_source"].str.lower().isin(non_emitters)
+gen_all.loc[mask, target_mv_col] = 0
+print(f"[INFO] Assigned 0 to {mask.sum()} non-emitting generators.")
 gen_all = impute_mv_by_zone_tech(gen_all, target_mv_col)
 
 missing = gen_all[target_mv_col].isna().sum()
 print(f"After imputation, missing {target_mv_col}: {missing}")
-# %% 
+####### 
 # 9c) Add MV average (VOC) and impute
 target_mv_col = "MD_VOC_ground"
 
 gen_all = add_mv_average_column(gen_all, MVdf, target_mv_col)
+# Assign 0 to non-emitting technologies before imputation
+print(f"[INFO] Setting {target_mv_col} = 0 for non-emitting technologies...")
+
+# Identify non-emitting sources from fuel_map
+non_emitters = [k for k, v in fuel_map.items() if v is None]
+
+# Assign 0 to non-emitting techs
+mask = gen_all["gen_energy_source"].str.lower().isin(non_emitters)
+gen_all.loc[mask, target_mv_col] = 0
+print(f"[INFO] Assigned 0 to {mask.sum()} non-emitting generators.")
 gen_all = impute_mv_by_zone_tech(gen_all, target_mv_col)
 
 missing = gen_all[target_mv_col].isna().sum()
 print(f"After imputation, missing {target_mv_col}: {missing}")
 
-# %% 
+####### 
 # 10a) Build gen_NOx_costs.csv, adjust MVs from 2011 dollars to to base_financial_year, save
 gen_emission_costs = pd.DataFrame({
     'GENERATION_PROJECT': gen_all['GENERATION_PROJECT'],
@@ -365,4 +434,3 @@ gen_emission_costs['VOC_cost_dollar_per_ton'] = gen_emission_costs['VOC_cost_dol
 out_emissions_file = input_path / "gen_emission_costs.csv"
 gen_emission_costs.to_csv(out_emissions_file, index=False)
 print(f"Saved {out_emissions_file} with {len(gen_emission_costs):,} rows.")
-# %%
