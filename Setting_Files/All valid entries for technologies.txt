@@ -1,0 +1,234 @@
+                   technology             tech_detail
+                      AEO                       *
+                  Battery                       *
+                 Biopower                       *
+                 Biopower               CofireNew
+                 Biopower               CofireOld
+                 Biopower               Dedicated
+                      CSP                       *
+                      CSP                  Class1
+                      CSP                  Class2
+                      CSP                  Class3
+                      CSP                  Class5
+                      CSP                  Class7
+                      CSP                  Class8
+                     Coal                       *
+                     Coal                 95%-CCS
+                     Coal                 99%-CCS
+                     Coal              CCS30AvgCF
+                     Coal             CCS30HighCF
+                     Coal              CCS36AvgCF
+                     Coal             CCS36HighCF
+                     Coal              CCS90AvgCF
+                     Coal             CCS90HighCF
+                     Coal                    IGCC
+                     Coal               IGCCAvgCF
+                     Coal              IGCCHighCF
+                     Coal                     New
+                     Coal                newAvgCF
+                     Coal               newHighCF
+           Coal_Retrofits                 90%-CCS
+           Coal_Retrofits                 95%-CCS
+                   CommPV                       *
+                   CommPV                 Chicago
+                   CommPV                  Class1
+                   CommPV                 Class10
+                   CommPV                  Class2
+                   CommPV                  Class3
+                   CommPV                  Class4
+                   CommPV                  Class5
+                   CommPV                  Class6
+                   CommPV                  Class7
+                   CommPV                  Class8
+                   CommPV                  Class9
+                   CommPV                 Daggett
+                   CommPV              KansasCity
+                   CommPV              LosAngeles
+                   CommPV                 Seattle
+          DistributedWind                       *
+          DistributedWind   CommercialScaleClass1
+          DistributedWind  CommercialScaleClass10
+          DistributedWind   CommercialScaleClass2
+          DistributedWind   CommercialScaleClass3
+          DistributedWind   CommercialScaleClass4
+          DistributedWind   CommercialScaleClass5
+          DistributedWind   CommercialScaleClass6
+          DistributedWind   CommercialScaleClass7
+          DistributedWind   CommercialScaleClass8
+          DistributedWind   CommercialScaleClass9
+          DistributedWind        LargeScaleClass1
+          DistributedWind       LargeScaleClass10
+          DistributedWind        LargeScaleClass2
+          DistributedWind        LargeScaleClass3
+          DistributedWind        LargeScaleClass4
+          DistributedWind        LargeScaleClass5
+          DistributedWind        LargeScaleClass6
+          DistributedWind        LargeScaleClass7
+          DistributedWind        LargeScaleClass8
+          DistributedWind        LargeScaleClass9
+          DistributedWind      MidsizeScaleClass1
+          DistributedWind     MidsizeScaleClass10
+          DistributedWind      MidsizeScaleClass2
+          DistributedWind      MidsizeScaleClass3
+          DistributedWind      MidsizeScaleClass4
+          DistributedWind      MidsizeScaleClass5
+          DistributedWind      MidsizeScaleClass6
+          DistributedWind      MidsizeScaleClass7
+          DistributedWind      MidsizeScaleClass8
+          DistributedWind      MidsizeScaleClass9
+          DistributedWind  ResidentialScaleClass1
+          DistributedWind ResidentialScaleClass10
+          DistributedWind  ResidentialScaleClass2
+          DistributedWind  ResidentialScaleClass3
+          DistributedWind  ResidentialScaleClass4
+          DistributedWind  ResidentialScaleClass5
+          DistributedWind  ResidentialScaleClass6
+          DistributedWind  ResidentialScaleClass7
+          DistributedWind  ResidentialScaleClass8
+          DistributedWind  ResidentialScaleClass9
+               Geothermal                       *
+               Geothermal           DeepEGSBinary
+               Geothermal            DeepEGSFlash
+               Geothermal             HydroBinary
+               Geothermal              HydroFlash
+               Geothermal             NFEGSBinary
+               Geothermal              NFEGSFlash
+               Hydropower                       *
+               Hydropower                    NPD1
+               Hydropower                    NPD2
+               Hydropower                    NPD3
+               Hydropower                    NPD4
+               Hydropower                    NPD5
+               Hydropower                    NPD6
+               Hydropower                    NPD7
+               Hydropower                    NPD8
+               Hydropower                    NSD1
+               Hydropower                    NSD2
+               Hydropower                    NSD3
+               Hydropower                    NSD4
+            LandbasedWind                       *
+            LandbasedWind                  Class1
+            LandbasedWind                 Class10
+            LandbasedWind                  Class2
+            LandbasedWind                  Class3
+            LandbasedWind                  Class4
+            LandbasedWind                  Class5
+            LandbasedWind                  Class6
+            LandbasedWind                  Class7
+            LandbasedWind                  Class8
+            LandbasedWind                  Class9
+            LandbasedWind                   LTRG1
+            LandbasedWind                  LTRG10
+            LandbasedWind                   LTRG2
+            LandbasedWind                   LTRG3
+            LandbasedWind                   LTRG4
+            LandbasedWind                   LTRG5
+            LandbasedWind                   LTRG6
+            LandbasedWind                   LTRG7
+            LandbasedWind                   LTRG8
+            LandbasedWind                   LTRG9
+               NaturalGas                       *
+               NaturalGas                 CCAvgCF
+               NaturalGas              CCCCSAvgCF
+               NaturalGas             CCCCSHighCF
+               NaturalGas                CCHighCF
+               NaturalGas                 CTAvgCF
+               NaturalGas                CTHighCF
+               NaturalGas              F-Frame CC
+               NaturalGas      F-Frame CC 95% CCS
+               NaturalGas      F-Frame CC 97% CCS
+               NaturalGas              F-Frame CT
+               NaturalGas               Fuel Cell
+               NaturalGas     Fuel Cell - 98% CCS
+               NaturalGas              H-Frame CC
+               NaturalGas      H-Frame CC 95% CCS
+               NaturalGas      H-Frame CC 97% CCS
+     NaturalGas_Retrofits      F-Frame CC 90%-CCS
+     NaturalGas_Retrofits      F-Frame CC 95%-CCS
+     NaturalGas_Retrofits      H-Frame CC 90%-CCS
+     NaturalGas_Retrofits      H-Frame CC 95%-CCS
+                  Nuclear                       *
+                  Nuclear                 Nuclear
+                  Nuclear              NuclearSMR
+             OffShoreWind                       *
+             OffShoreWind                  Class1
+             OffShoreWind                 Class10
+             OffShoreWind                 Class11
+             OffShoreWind                 Class12
+             OffShoreWind                 Class13
+             OffShoreWind                 Class14
+             OffShoreWind                  Class2
+             OffShoreWind                  Class3
+             OffShoreWind                  Class4
+             OffShoreWind                  Class5
+             OffShoreWind                  Class6
+             OffShoreWind                  Class7
+             OffShoreWind                  Class8
+             OffShoreWind                  Class9
+             OffShoreWind                   OTRG1
+             OffShoreWind                  OTRG10
+             OffShoreWind                  OTRG11
+             OffShoreWind                  OTRG12
+             OffShoreWind                  OTRG13
+             OffShoreWind                  OTRG14
+             OffShoreWind                  OTRG15
+             OffShoreWind                   OTRG2
+             OffShoreWind                   OTRG3
+             OffShoreWind                   OTRG4
+             OffShoreWind                   OTRG5
+             OffShoreWind                   OTRG6
+             OffShoreWind                   OTRG7
+             OffShoreWind                   OTRG8
+             OffShoreWind                   OTRG9
+Pumped Storage Hydropower                       *
+Pumped Storage Hydropower                 Class 1
+Pumped Storage Hydropower                 Class 2
+Pumped Storage Hydropower                 Class 3
+Pumped Storage Hydropower                 Class 4
+Pumped Storage Hydropower              NatlClass1
+Pumped Storage Hydropower             NatlClass10
+Pumped Storage Hydropower             NatlClass11
+Pumped Storage Hydropower             NatlClass12
+Pumped Storage Hydropower             NatlClass13
+Pumped Storage Hydropower             NatlClass14
+Pumped Storage Hydropower             NatlClass15
+Pumped Storage Hydropower              NatlClass2
+Pumped Storage Hydropower              NatlClass3
+Pumped Storage Hydropower              NatlClass4
+Pumped Storage Hydropower              NatlClass5
+Pumped Storage Hydropower              NatlClass6
+Pumped Storage Hydropower              NatlClass7
+Pumped Storage Hydropower              NatlClass8
+Pumped Storage Hydropower              NatlClass9
+                    ResPV                       *
+                    ResPV                 Chicago
+                    ResPV                  Class1
+                    ResPV                 Class10
+                    ResPV                  Class2
+                    ResPV                  Class3
+                    ResPV                  Class4
+                    ResPV                  Class5
+                    ResPV                  Class6
+                    ResPV                  Class7
+                    ResPV                  Class8
+                    ResPV                  Class9
+                    ResPV                 Daggett
+                    ResPV              KansasCity
+                    ResPV              LosAngeles
+                    ResPV                 Seattle
+                UtilityPV                       *
+                UtilityPV                 Chicago
+                UtilityPV                  Class1
+                UtilityPV                 Class10
+                UtilityPV                  Class2
+                UtilityPV                  Class3
+                UtilityPV                  Class4
+                UtilityPV                  Class5
+                UtilityPV                  Class6
+                UtilityPV                  Class7
+                UtilityPV                  Class8
+                UtilityPV                  Class9
+                UtilityPV                 Daggett
+                UtilityPV              KansasCity
+                UtilityPV              LosAngeles
+                UtilityPV                 Seattle
