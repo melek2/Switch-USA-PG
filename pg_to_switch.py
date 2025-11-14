@@ -920,7 +920,13 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
         .sort_values(["Resource", "model_year", "build_year"])
         .reset_index()
     )
-
+    # DEBUG warning before the assert added by MBA
+    bad = units_by_model_year.query("existing and build_year.isna()", engine="python")
+    if not bad.empty:
+        print("\n[WARNING] Existing units found *without* build_year after assignment:")
+        print(f"  Count: {len(bad)}")
+        print(bad[["Resource", "model_year", "build_year"]].to_string(index=False))
+        print("  (These will cause the upcoming assertion to fail.)\n")
     # edited by MBA: assign build_year=2020 for any existing units that does not have one
     mask = units_by_model_year["existing"] & units_by_model_year["build_year"].isna()
     units_by_model_year.loc[mask, "build_year"] = 2020
@@ -1019,11 +1025,31 @@ def gen_tables(gc, pudl_engine, scen_settings_dict):
             "capacity_mwh",
         ],
     ] = None
+    # Added by MBA: convert any 0 values in these columns to None. 
+    # Batteries sometimes have Existing_Cap_MW=0 and Existing_Cap_MWh=0 in the PG
+    # output, which causes issues for the "no existing capacity for new_build" check.
+    cols_to_clean = [
+        "Existing_Cap_MW",
+        "Existing_Cap_MWh",
+        "capex_mwh",
+        "Fixed_OM_Cost_per_MWhyr",
+        "capacity_mwh",
+    ]
+    gens_by_build_year[cols_to_clean] = gens_by_build_year[cols_to_clean].replace(0, np.nan)
+    # Sanity check: make sure no new-build generators have Existing_Cap_MW assigned
+    bad_rows = gens_by_build_year[
+        gens_by_build_year["new_build"]
+        & gens_by_build_year["Existing_Cap_MW"].notna()
+    ]
 
-    assert (
-        gens_by_build_year["new_build"] & gens_by_build_year["Existing_Cap_MW"].notna()
-    ).sum() == 0, "Some new-build generators have Existing_Cap_MW assigned."
+    # If any exist, print them before raising the assertion error
+    if len(bad_rows) > 0:
+        print("=== DEBUG: New-build generators incorrectly assigned Existing_Cap_MW ===")
+        debug_path = out_folder / "debug_bad_new_build_gens.csv"
+        bad_rows.to_csv(debug_path, index=False)
+        print(f'Saved offending rows to "{debug_path}"')
 
+    assert len(bad_rows) == 0, "Some new-build generators have Existing_Cap_MW assigned."
     return gens_by_model_year, gens_by_build_year
 
 

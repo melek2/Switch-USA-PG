@@ -177,11 +177,17 @@ def gen_info_table(
 
     # create gen_connect_cost_per_mw from spur_miles and spur_capex_mw_mile
     gen_info["spur_capex_mw_mi"] = gen_info["region"].map(spur_capex_mw_mile)
+    zero_mask = gen_info["spur_miles"].isna() # Identify rows where spur_miles will be assigned 0 and count how many NA values per gen_tech added by MBA
+    zero_counts = gen_info.loc[zero_mask, "technology"].value_counts()
+    if zero_counts.any():  # print only if there are any NA values
+        print("[DEBUG] spur_miles NA values before fill (to be set to 0):")
+    for tech, count in zero_counts.items():
+        print(f"    - {tech}: {count} generators")
     gen_info["spur_miles"] = gen_info["spur_miles"].fillna(0)
     gen_info.loc[
         gen_info["gen_connect_cost_per_mw"] == 0, "gen_connect_cost_per_mw"
     ] = (gen_info["spur_capex_mw_mi"] * gen_info["spur_miles"])
-    gen_info = gen_info.drop(["spur_miles", "spur_capex_mw_mi"], axis=1)
+    # gen_info = gen_info.drop(["spur_miles", "spur_capex_mw_mi"], axis=1) # keeping for debugging by MBA
 
     # clean up gen_is_variable; usually only solar and wind technologies are true
     gen_info["gen_is_variable"] = gen_info["gen_is_variable"].astype(bool)
@@ -232,7 +238,7 @@ def gen_info_table(
             # will use gen_max_age by default). But we always report it in case
             # the settings use a longer retirement_age (or none) to prevent
             # age-based retirement.
-            "cap_recovery_years": "gen_amortization_period",
+            # "cap_recovery_years": "gen_amortization_period",
             "Min_Power": "gen_min_load_fraction",
             "Ramp_Up_Percentage": "gen_ramp_limit_up",
             "Ramp_Dn_Percentage": "gen_ramp_limit_down",
@@ -250,12 +256,11 @@ def gen_info_table(
 
     cols = [
         "GENERATION_PROJECT",
-        # "plant_gen_id"
         "gen_tech",
         "gen_energy_source",
         "gen_load_zone",
         "gen_max_age",
-        "gen_amortization_period",
+        # "gen_amortization_period",
         "gen_can_retire_early",
         "gen_is_variable",
         "gen_is_baseload",
@@ -302,6 +307,9 @@ def gen_info_table(
         "MinCapTag_3",
         "MinCapTag_4",
         "MinCapTag_5",
+        # "New_Build", # adding this here to help with getting candidate sites - MBA
+        # "spur_miles", # adding #spur_miles", "spur_capex_mw_mi" here to help with debugging - MBA
+        "spur_capex_mw_mi",
     ]  # index
 
     gen_info = gen_info[cols]
