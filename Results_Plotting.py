@@ -23,7 +23,7 @@ pd.options.display.float_format = '{:,.2f}'.format
 import altair as alt
 from pathlib import Path
 import sys
-sys.path.append('/Users/melek/Switch-USA-PG/MIP_results_comparison/notebooks/')
+sys.path.append('/Users/melek/Documents/GitHub/Switch-USA-PG/MIP_results_comparison/notebooks/')
 
 # %%
 def load_csvs_as_vars(folder_path: str) -> None:
@@ -41,12 +41,10 @@ def load_csvs_as_vars(folder_path: str) -> None:
 
 # %%
 # KEY FOLDERS AND FILES
-graph_tech_colors = '/Users/melek/Switch-USA-PG/switch/26-zone/in/2050/base_short/graph_tech_colors.csv'
-conus_26_file = '/Users/melek/Switch-USA-PG/MIP_results_comparison/notebooks/conus_26z_latlon_simple.geojson'
-# input_folder = "/Users/melek/Switch-USA-PG/switch/26-zone/in_test/2050/base_short"
-input_folder = "/Users/melek/Switch-USA-PG/switch/26-zone/input_PM25/2050/base_short"
-# output_folder = "/Users/melek/Switch-USA-PG/switch/26-zone/out/NoCluster"
-output_folder = "/Users/melek/Switch-USA-PG/switch/26-zone/output_PM25/No_Policies"
+graph_tech_colors = '/Users/melek/Documents/GitHub/Switch-USA-PG/switch/26-zone/in/2050/base_short/graph_tech_colors.csv'
+conus_26_file = '/Users/melek/Documents/GitHub/Switch-USA-PG/MIP_results_comparison/notebooks/conus_26z_latlon_simple.geojson'
+input_folder = "/Users/melek/Documents/GitHub/Switch-USA-PG/switch/26-zone/input_PM25/2050/base_short"
+output_folder = "/Users/melek/Documents/GitHub/Switch-USA-PG/switch/26-zone/output_PM25/No_Policies"
 # load inputs and outputs
 load_csvs_as_vars(input_folder)
 load_csvs_as_vars(output_folder)
