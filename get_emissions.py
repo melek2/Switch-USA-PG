@@ -198,8 +198,8 @@ for col in intensity_cols:
 
 # archive then write
 fuels_archive = input_path / 'fuels_archive.csv'
-# fuels.to_csv(fuels_archive, index=False)
-# fuels_out.to_csv(fuels_file, index=False)
+fuels.to_csv(fuels_archive, index=False)
+fuels_out.to_csv(fuels_file, index=False)
 print(f"fuels.csv updated with {len(intensity_cols)} intensity columns. Archive -> {fuels_archive}")
 ####### 
 # 6) Emission Factors by generator
@@ -374,6 +374,8 @@ if cerf_candidate_sites is not None:
 else:
     print(f"[INFO] No CERF candidate sites provided — continuing with {len(gen_info):,} base generators only.")
     gen_all = gen_info.copy()
+# Ensure each generator project appears once
+gen_all = gen_all.drop_duplicates(subset='GENERATION_PROJECT', keep='first')
 print(f"[INFO] Coordinate and MV-cell assignment complete. Final generator count: {len(gen_all):,}\n")
 ####### 
 # 9a) Add MV average (PM2.5) and impute
@@ -394,18 +396,39 @@ gen_all = impute_mv_by_zone_tech(gen_all, target_mv_col)
 
 missing = gen_all[target_mv_col].isna().sum()
 print(f"After imputation, missing {target_mv_col}: {missing}")
-# Building gen_pm25_costs.csv, adjust MVs from 2011 dollars to to base_financial_year, save
-gen_pm25_costs = pd.DataFrame({
-    'GENERATION_PROJECT': gen_all['GENERATION_PROJECT'],
-    'pm25_cost_dollar_per_ton': gen_all[target_mv_col],
-    'gen_pm25_intensity_ton_per_MMBtu':EF['PM2.5_t_per_MMBtu']
-})
 
-# gen_pm25_costs['pm25_cost_dollar_per_ton'] = inflation_price_adjustment(
-#     gen_pm25_costs['pm25_cost_dollar_per_ton'],
-#     2011, base_financial_year
-# )
-gen_pm25_costs['pm25_cost_dollar_per_ton'] = gen_pm25_costs['pm25_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
+# # Building gen_pm25_costs.csv, adjust MVs from 2011 dollars to to base_financial_year, save
+# gen_pm25_costs = pd.DataFrame({
+#     'GENERATION_PROJECT': gen_all['GENERATION_PROJECT'],
+#     'pm25_cost_dollar_per_ton': gen_all[target_mv_col],
+#     'gen_pm25_intensity_ton_per_MMBtu':EF['PM2.5_t_per_MMBtu']
+# })
+
+# # gen_pm25_costs['pm25_cost_dollar_per_ton'] = inflation_price_adjustment(
+# #     gen_pm25_costs['pm25_cost_dollar_per_ton'],
+# #     2011, base_financial_year
+# # )
+# gen_pm25_costs['pm25_cost_dollar_per_ton'] = gen_pm25_costs['pm25_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
+
+# out_pm25 = input_path / "gen_pm25_costs.csv"
+# gen_pm25_costs.to_csv(out_pm25, index=False)
+# print(f"Saved {out_pm25} with {len(gen_pm25_costs):,} rows.")
+# --- Build gen_pm25_costs.csv via merge on GENERATION_PROJECT ---
+EF_lo = EF[['GENERATION_PROJECT', 'PM2.5_t_per_MMBtu']].copy()
+
+gen_pm25_costs = (
+    gen_all[['GENERATION_PROJECT', 'MD_PM2.5_ground']]
+    .merge(EF_lo, on='GENERATION_PROJECT', how='left')
+    .rename(columns={
+        'MD_PM2.5_ground': 'pm25_cost_dollar_per_ton',
+        'PM2.5_t_per_MMBtu': 'gen_pm25_intensity_ton_per_MMBtu'
+    })
+    .drop_duplicates(subset='GENERATION_PROJECT', keep='first')
+)
+
+gen_pm25_costs['pm25_cost_dollar_per_ton'] = (
+    gen_pm25_costs['pm25_cost_dollar_per_ton'] * (1 + CumulativeRateofInflation)
+)
 
 out_pm25 = input_path / "gen_pm25_costs.csv"
 gen_pm25_costs.to_csv(out_pm25, index=False)
@@ -452,20 +475,44 @@ print(f"After imputation, missing {target_mv_col}: {missing}")
 
 ####### 
 # 10a) Build gen_NOx_costs.csv, adjust MVs from 2011 dollars to to base_financial_year, save
-gen_emission_costs = pd.DataFrame({
-    'GENERATION_PROJECT': gen_all['GENERATION_PROJECT'],
-    'pm25_cost_dollar_per_ton': gen_all['MD_PM2.5_ground'],
-    'gen_pm25_intensity_ton_per_MMBtu':EF['PM2.5_t_per_MMBtu'],
-    'NOx_cost_dollar_per_ton': gen_all['MD_NOx_ground'],
-    'gen_NOx_intensity_ton_per_MMBtu':EF['NOx_t_per_MMBtu'],
-    'VOC_cost_dollar_per_ton': gen_all['MD_VOC_ground'],
-    'gen_VOC_intensity_ton_per_MMBtu':EF['VOC_t_per_MMBtu']
-})
+# gen_emission_costs = pd.DataFrame({
+#     'GENERATION_PROJECT': gen_all['GENERATION_PROJECT'],
+#     'pm25_cost_dollar_per_ton': gen_all['MD_PM2.5_ground'],
+#     'gen_pm25_intensity_ton_per_MMBtu':EF['PM2.5_t_per_MMBtu'],
+#     'NOx_cost_dollar_per_ton': gen_all['MD_NOx_ground'],
+#     'gen_NOx_intensity_ton_per_MMBtu':EF['NOx_t_per_MMBtu'],
+#     'VOC_cost_dollar_per_ton': gen_all['MD_VOC_ground'],
+#     'gen_VOC_intensity_ton_per_MMBtu':EF['VOC_t_per_MMBtu']
+# })
 
-gen_emission_costs['pm25_cost_dollar_per_ton'] = gen_emission_costs['pm25_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
-gen_emission_costs['NOx_cost_dollar_per_ton'] = gen_emission_costs['NOx_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
-gen_emission_costs['VOC_cost_dollar_per_ton'] = gen_emission_costs['VOC_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
+# gen_emission_costs['pm25_cost_dollar_per_ton'] = gen_emission_costs['pm25_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
+# gen_emission_costs['NOx_cost_dollar_per_ton'] = gen_emission_costs['NOx_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
+# gen_emission_costs['VOC_cost_dollar_per_ton'] = gen_emission_costs['VOC_cost_dollar_per_ton']*(1+CumulativeRateofInflation)
 
+
+# out_emissions_file = input_path / "gen_emission_costs.csv"
+# gen_emission_costs.to_csv(out_emissions_file, index=False)
+# print(f"Saved {out_emissions_file} with {len(gen_emission_costs):,} rows.")
+# --- Build gen_emission_costs.csv via merge on GENERATION_PROJECT ---
+EF_lo = EF[['GENERATION_PROJECT',
+            'PM2.5_t_per_MMBtu', 'NOx_t_per_MMBtu', 'VOC_t_per_MMBtu']].copy()
+
+gen_emission_costs = (
+    gen_all[['GENERATION_PROJECT', 'MD_PM2.5_ground', 'MD_NOx_ground', 'MD_VOC_ground']]
+    .merge(EF_lo, on='GENERATION_PROJECT', how='left')
+    .rename(columns={
+        'MD_PM2.5_ground': 'pm25_cost_dollar_per_ton',
+        'PM2.5_t_per_MMBtu': 'gen_pm25_intensity_ton_per_MMBtu',
+        'MD_NOx_ground': 'NOx_cost_dollar_per_ton',
+        'NOx_t_per_MMBtu': 'gen_NOx_intensity_ton_per_MMBtu',
+        'MD_VOC_ground': 'VOC_cost_dollar_per_ton',
+        'VOC_t_per_MMBtu': 'gen_VOC_intensity_ton_per_MMBtu'
+    })
+    .drop_duplicates(subset='GENERATION_PROJECT', keep='first')
+)
+
+for c in ['pm25_cost_dollar_per_ton', 'NOx_cost_dollar_per_ton', 'VOC_cost_dollar_per_ton']:
+    gen_emission_costs[c] = gen_emission_costs[c] * (1 + CumulativeRateofInflation)
 
 out_emissions_file = input_path / "gen_emission_costs.csv"
 gen_emission_costs.to_csv(out_emissions_file, index=False)
